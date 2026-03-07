@@ -1,0 +1,26 @@
+extends ../layouts/main
+
+block content
+  .row.justify-content-center
+    .col-md-6
+      .card
+        .card-header
+          h3 Login
+        .card-body
+          form(method="POST" action="/auth/login")
+            .mb-3
+              label.form-label(for="email") Email
+              input.form-control#email(type="email" name="email" required)
+            .mb-3
+              label.form-label(for="password") Password
+              input.form-control#password(type="password" name="password" required)
+            button.btn.btn-primary.w-100(type="submit") Login
+          hr
+          .d-grid.gap-2
+            a.btn.btn-outline-primary(href="/auth/facebook") Login with Facebook
+            a.btn.btn-outline-dark(href="/auth/github") Login with GitHub
+          hr
+          .text-center
+            a(href="/auth/reset-password") Forgot password?
+            |  |
+            a(href="/auth/register") Register

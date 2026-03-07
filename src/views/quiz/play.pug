@@ -1,0 +1,81 @@
+extends ../layouts/main
+
+block content
+  .row
+    .col-md-8
+      #quizArea
+        #questionDisplay.card.mb-3(style="display:none")
+          .card-header.d-flex.justify-content-between
+            h4#questionText
+            span#timerBadge.badge.bg-warning
+          .card-body
+            #questionMedia
+            #answerArea
+              #mcArea(style="display:none")
+                .d-grid.gap-2#mcOptions
+              #textArea(style="display:none")
+                .mb-3
+                  textarea.form-control#textAnswer(rows="3" placeholder="Type your answer...")
+                button.btn.btn-primary#submitText Submit Answer
+              #drawingArea(style="display:none")
+                include ../partials/drawingCanvas
+                button.btn.btn-primary.mt-2#submitDrawing Submit Drawing
+
+        #waitingMessage.text-center.py-5
+          h3 Waiting for quiz to start...
+
+        #roundComplete(style="display:none")
+          .card
+            .card-header
+              h3 Round Complete!
+            .card-body
+              #roundLeaderboard
+
+        #quizComplete(style="display:none")
+          .card.text-center
+            .card-header
+              h3 Quiz Complete!
+            .card-body
+              #finalLeaderboard
+
+    .col-md-4
+      .card.mb-3
+        .card-header
+          h5 Status
+        .card-body
+          p Round: #[span#currentRound -]
+          p Question: #[span#currentQuestion -]
+          p Status: #[span#quizStatus Waiting]
+
+      if isQuizmaster
+        .card.mb-3
+          .card-header
+            h5 Quizmaster Controls
+          .card-body
+            .d-grid.gap-2
+              button.btn.btn-success#btnStart Start Quiz
+              button.btn.btn-primary#btnNext(disabled) Next Question
+              button.btn.btn-warning#btnPause(disabled) Pause
+              button.btn.btn-info#btnResume(disabled style="display:none") Resume
+            hr
+            h6 Drawing Review
+            #drawingReviewArea
+              p No drawings to review.
+
+      .card
+        .card-header
+          h5 Leaderboard
+        .card-body
+          #sideLeaderboard
+            p No scores yet.
+
+block scripts
+  script(src="/js/drawing.js")
+  script.
+    var quizId = !{quiz.id};
+    var isQuizmaster = !{isQuizmaster ? 'true' : 'false'};
+  script(src="/js/socket-client.js")
+  if isQuizmaster
+    script(src="/js/quiz-master.js")
+  else
+    script(src="/js/quiz-player.js")

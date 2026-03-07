@@ -1,0 +1,26 @@
+extends ../layouts/main
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .card
+        .card-header
+          h3 Leaderboard
+          if quiz
+            small= quiz.title
+        .card-body
+          if leaderboard && leaderboard.length
+            table.table
+              thead
+                tr
+                  th Rank
+                  th Name
+                  th Score
+              tbody
+                each entry, index in leaderboard
+                  tr(class=index < 3 ? 'table-success' : '')
+                    td= index + 1
+                    td= entry.name
+                    td= entry.total_score
+          else
+            p.text-center No scores yet.

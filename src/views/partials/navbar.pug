@@ -1,0 +1,27 @@
+nav.navbar.navbar-expand-lg.navbar-dark.bg-dark
+  .container
+    a.navbar-brand(href="/") Table Quiz
+    button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav")
+      span.navbar-toggler-icon
+    #navbarNav.collapse.navbar-collapse
+      ul.navbar-nav.me-auto
+        if user
+          li.nav-item
+            a.nav-link(href="/quiz") Quizzes
+          if user.role === 'quizmaster' || user.role === 'admin'
+            li.nav-item
+              a.nav-link(href="/questions") Question Bank
+          if user.role === 'admin'
+            li.nav-item
+              a.nav-link(href="/admin") Admin
+      ul.navbar-nav
+        if user
+          li.nav-item
+            span.nav-link #{user.display_name || user.email} (#{user.role})
+          li.nav-item
+            a.nav-link(href="/auth/logout") Logout
+        else
+          li.nav-item
+            a.nav-link(href="/auth/login") Login
+          li.nav-item
+            a.nav-link(href="/auth/register") Register

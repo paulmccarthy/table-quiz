@@ -1,0 +1,34 @@
+extends ../layouts/main
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-3
+    h2 Question Bank
+    a.btn.btn-primary(href="/questions/create") Create Question
+  if questions && questions.length
+    table.table
+      thead
+        tr
+          th ID
+          th Question
+          th Content
+          th Answer Type
+          th Difficulty
+          th Actions
+      tbody
+        each q in questions
+          tr
+            td= q.id
+            td= q.text.substring(0, 60)
+            td
+              span.badge.bg-info= q.content_type
+            td
+              span.badge.bg-secondary= q.answer_type
+            td
+              span.badge(class={'easy':'bg-success','medium':'bg-warning','hard':'bg-danger'}[q.difficulty])= q.difficulty
+            td
+              .btn-group
+                a.btn.btn-sm.btn-outline-primary(href=`/questions/${q.id}/edit`) Edit
+                form(method="POST" action=`/questions/${q.id}/delete` style="display:inline" onsubmit="return confirm('Delete?')")
+                  button.btn.btn-sm.btn-outline-danger(type="submit") Delete
+  else
+    p.text-center No questions yet.

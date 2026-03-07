@@ -1,0 +1,38 @@
+extends ../layouts/main
+
+block content
+  .d-flex.justify-content-between.align-items-center.mb-3
+    h2 Quizzes
+    if user.role === 'quizmaster' || user.role === 'admin'
+      a.btn.btn-primary(href="/quiz/create") Create Quiz
+  .row
+    .col-md-8.mx-auto
+      .card.mb-4
+        .card-body
+          form.row.g-2(method="POST" action="/quiz/join")
+            .col
+              input.form-control(type="text" name="accessCode" placeholder="Enter access code")
+            .col-auto
+              button.btn.btn-outline-primary(type="submit") Join Quiz
+
+      if quizzes && quizzes.length
+        each quiz in quizzes
+          .card.mb-2
+            .card-body.d-flex.justify-content-between.align-items-center
+              div
+                h5.mb-1= quiz.title
+                span.badge(class={'draft':'bg-secondary','lobby':'bg-info','active':'bg-success','paused':'bg-warning','completed':'bg-dark'}[quiz.status])= quiz.status
+                if quiz.is_public
+                  span.badge.bg-success.ms-1 Public
+              .btn-group
+                if quiz.status === 'draft'
+                  a.btn.btn-sm.btn-outline-primary(href=`/quiz/${quiz.id}/edit`) Edit
+                if quiz.status === 'lobby' || quiz.status === 'active' || quiz.status === 'paused'
+                  a.btn.btn-sm.btn-outline-success(href=`/quiz/${quiz.id}/lobby`) Lobby
+                  a.btn.btn-sm.btn-outline-primary(href=`/quiz/${quiz.id}/play`) Play
+                if quiz.status === 'completed'
+                  a.btn.btn-sm.btn-outline-info(href=`/quiz/${quiz.id}/leaderboard`) Results
+                  a.btn.btn-sm.btn-outline-secondary(href=`/export/${quiz.id}/csv`) CSV
+                  a.btn.btn-sm.btn-outline-secondary(href=`/export/${quiz.id}/pdf`) PDF
+      else
+        p.text-center No quizzes found.

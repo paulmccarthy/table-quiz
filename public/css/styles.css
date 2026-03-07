@@ -1,0 +1,38 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+.card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+#drawingCanvas {
+  display: block;
+  background: #fff;
+}
+
+.drawing-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#timerBadge {
+  font-size: 1.2rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+#mcOptions .btn {
+  text-align: left;
+  font-size: 1.1rem;
+}
+
+.table-success {
+  font-weight: bold;
+}

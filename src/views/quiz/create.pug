@@ -1,0 +1,66 @@
+extends ../layouts/main
+
+block content
+  .row
+    .col-md-8.mx-auto
+      .card
+        .card-header
+          h3= quiz ? 'Edit Quiz' : 'Create Quiz'
+        .card-body
+          form(method="POST" action=quiz ? `/quiz/${quiz.id}/edit` : '/quiz/create')
+            .mb-3
+              label.form-label(for="title") Quiz Title
+              input.form-control#title(type="text" name="title" value=(quiz ? quiz.title : '') required)
+            .mb-3
+              label.form-label(for="numRounds") Number of Rounds
+              input.form-control#numRounds(type="number" name="numRounds" min="1" value=(quiz ? quiz.num_rounds : 1) required)
+            .mb-3.form-check
+              input.form-check-input#isPublic(type="checkbox" name="isPublic" checked=(quiz && quiz.is_public))
+              label.form-check-label(for="isPublic") Public Quiz
+            button.btn.btn-primary(type="submit")= quiz ? 'Update Quiz' : 'Create Quiz'
+
+          if quiz
+            hr
+            h4 Rounds
+            each round in (quiz.rounds || [])
+              .card.mb-3
+                .card-header.d-flex.justify-content-between.align-items-center
+                  span Round #{round.round_number} (#{round.questions ? round.questions.length : 0} questions)
+                  form(method="POST" action=`/quiz/${quiz.id}/rounds/${round.id}/delete` style="display:inline")
+                    button.btn.btn-sm.btn-danger(type="submit") Remove
+                .card-body
+                  if round.questions && round.questions.length
+                    table.table.table-sm
+                      thead
+                        tr
+                          th Order
+                          th Question
+                          th Type
+                          th Action
+                      tbody
+                        each q in round.questions
+                          tr
+                            td= q.question_order
+                            td= q.text
+                            td= q.content_type
+                            td
+                              form(method="POST" action=`/quiz/${quiz.id}/rounds/${round.id}/questions/${q.round_question_id}/remove` style="display:inline")
+                                button.btn.btn-sm.btn-outline-danger(type="submit") Remove
+                  form.row.g-2(method="POST" action=`/quiz/${quiz.id}/rounds/${round.id}/questions/add`)
+                    .col-auto
+                      input.form-control(type="number" name="questionId" placeholder="Question ID" required)
+                    .col-auto
+                      input.form-control(type="number" name="questionOrder" placeholder="Order" required)
+                    .col-auto
+                      button.btn.btn-sm.btn-primary(type="submit") Add Question
+
+            form(method="POST" action=`/quiz/${quiz.id}/rounds/add`)
+              button.btn.btn-outline-primary(type="submit") Add Round
+
+            hr
+            .d-flex.gap-2
+              form(method="POST" action=`/quiz/${quiz.id}/activate`)
+                button.btn.btn-success(type="submit") Open Lobby
+              a.btn.btn-info(href=`/quiz/${quiz.id}/invite`) Invitations
+              form(method="POST" action=`/quiz/${quiz.id}/delete` onsubmit="return confirm('Delete this quiz?')")
+                button.btn.btn-danger(type="submit") Delete Quiz

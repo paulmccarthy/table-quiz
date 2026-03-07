@@ -1,0 +1,16 @@
+if messages
+  if messages.error
+    each msg in (Array.isArray(messages.error) ? messages.error : [messages.error])
+      .alert.alert-danger.alert-dismissible.fade.show
+        = msg
+        button.btn-close(type="button" data-bs-dismiss="alert")
+  if messages.success
+    each msg in (Array.isArray(messages.success) ? messages.success : [messages.success])
+      .alert.alert-success.alert-dismissible.fade.show
+        = msg
+        button.btn-close(type="button" data-bs-dismiss="alert")
+  if messages.info
+    each msg in (Array.isArray(messages.info) ? messages.info : [messages.info])
+      .alert.alert-info.alert-dismissible.fade.show
+        = msg
+        button.btn-close(type="button" data-bs-dismiss="alert")

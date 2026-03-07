@@ -1,0 +1,24 @@
+extends ../layouts/main
+
+block content
+  h2 Quiz History
+  if results && results.length
+    table.table
+      thead
+        tr
+          th Quiz
+          th Date
+          th Rounds
+          th Questions
+          th Action
+      tbody
+        each r in results
+          tr
+            td= r.quiz_title
+            td= new Date(r.completed_at).toLocaleDateString()
+            td= r.total_rounds
+            td= r.total_questions
+            td
+              a.btn.btn-sm.btn-outline-primary(href=`/history/${r.quiz_id}`) View
+  else
+    p.text-center No quiz history.

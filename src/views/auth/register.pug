@@ -1,0 +1,22 @@
+extends ../layouts/main
+
+block content
+  .row.justify-content-center
+    .col-md-6
+      .card
+        .card-header
+          h3 Register
+        .card-body
+          form(method="POST" action="/auth/register")
+            .mb-3
+              label.form-label(for="displayName") Display Name
+              input.form-control#displayName(type="text" name="displayName")
+            .mb-3
+              label.form-label(for="email") Email
+              input.form-control#email(type="email" name="email" required)
+            .mb-3
+              label.form-label(for="password") Password
+              input.form-control#password(type="password" name="password" minlength="8" required)
+            button.btn.btn-primary.w-100(type="submit") Register
+          .text-center.mt-3
+            a(href="/auth/login") Already have an account? Login

@@ -1,0 +1,30 @@
+extends ../layouts/main
+
+block content
+  .row.justify-content-center
+    .col-md-6
+      .card
+        .card-header
+          h3 Invite Players: #{quiz.title}
+        .card-body
+          .mb-3
+            label.form-label Access Code
+            .input-group
+              input.form-control(type="text" value=quiz.access_code readonly)
+              button.btn.btn-outline-secondary(onclick=`navigator.clipboard.writeText('${quiz.access_code}')`) Copy
+
+          .mb-3
+            label.form-label Invite Link
+            .input-group
+              input.form-control(type="text" value=inviteUrl readonly)
+              button.btn.btn-outline-secondary(onclick=`navigator.clipboard.writeText('${inviteUrl}')`) Copy
+
+          form(method="POST" action=`/quiz/${quiz.id}/invite/regenerate`)
+            button.btn.btn-sm.btn-outline-warning(type="submit") Regenerate Link
+
+          hr
+          h5 Send Email Invitation
+          form(method="POST" action=`/quiz/${quiz.id}/invite/send`)
+            .input-group
+              input.form-control(type="email" name="email" placeholder="player@example.com" required)
+              button.btn.btn-primary(type="submit") Send

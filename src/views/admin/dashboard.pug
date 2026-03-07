@@ -1,0 +1,40 @@
+extends ../layouts/main
+
+block content
+  h2 Admin Dashboard
+  .card.mb-4
+    .card-header
+      h4 Users
+    .card-body
+      if users && users.length
+        table.table
+          thead
+            tr
+              th ID
+              th Email
+              th Name
+              th Role
+              th Verified
+              th Actions
+          tbody
+            each u in users
+              tr
+                td= u.id
+                td= u.email
+                td= u.display_name
+                td
+                  form.d-inline(method="POST" action=`/admin/${u.id}/role`)
+                    select.form-select.form-select-sm.d-inline(name="role" style="width:auto" onchange="this.form.submit()")
+                      option(value="player" selected=(u.role === 'player')) Player
+                      option(value="quizmaster" selected=(u.role === 'quizmaster')) Quizmaster
+                      option(value="admin" selected=(u.role === 'admin')) Admin
+                td
+                  if u.email_verified
+                    span.badge.bg-success Yes
+                  else
+                    span.badge.bg-warning No
+                td
+                  form.d-inline(method="POST" action=`/admin/${u.id}/delete` onsubmit="return confirm('Delete user?')")
+                    button.btn.btn-sm.btn-outline-danger(type="submit") Delete
+      else
+        p No users found.

@@ -1,0 +1,80 @@
+extends ../layouts/main
+
+block content
+  .row
+    .col-md-8
+      .card.mb-3
+        .card-header
+          h3 Lobby: #{quiz.title}
+          span.badge(class=quiz.is_public ? 'bg-success' : 'bg-warning')= quiz.is_public ? 'Public' : 'Private'
+          span.badge.bg-info.ms-2 Code: #{quiz.access_code}
+        .card-body
+          h5 Players
+          #playerList
+            if participants && participants.length
+              table.table
+                thead
+                  tr
+                    th Name
+                    th Status
+                    if user.role === 'quizmaster' || user.role === 'admin'
+                      th Action
+                tbody
+                  each p in participants
+                    tr
+                      td= p.display_name || p.email
+                      td
+                        if p.admitted
+                          span.badge.bg-success Admitted
+                        else
+                          span.badge.bg-warning Pending
+                      if (user.role === 'quizmaster' || user.role === 'admin') && !p.admitted
+                        td
+                          form(method="POST" action=`/quiz/${quiz.id}/admit/${p.user_id}` style="display:inline")
+                            button.btn.btn-sm.btn-success(type="submit") Admit
+            else
+              p No players yet.
+
+          if user.role === 'quizmaster' || user.role === 'admin'
+            hr
+            .d-flex.gap-2
+              a.btn.btn-primary(href=`/quiz/${quiz.id}/play`) Start Quiz
+              form(method="POST" action=`/teams/${quiz.id}/random-assign`)
+                button.btn.btn-outline-secondary(type="submit") Random Team Assign
+
+    .col-md-4
+      .card.mb-3
+        .card-header
+          h5 Teams
+        .card-body
+          each team in (teams || [])
+            .card.mb-2
+              .card-header.d-flex.justify-content-between
+                strong= team.name
+                span #{team.members ? team.members.length : 0}/6
+              .card-body
+                if team.members && team.members.length
+                  ul.list-unstyled.mb-0
+                    each member in team.members
+                      li= member.display_name || member.email
+                if user
+                  .mt-2
+                    form(method="POST" action=`/teams/${quiz.id}/${team.id}/join` style="display:inline")
+                      button.btn.btn-sm.btn-outline-primary(type="submit") Join
+                    form(method="POST" action=`/teams/${quiz.id}/${team.id}/leave` style="display:inline")
+                      button.btn.btn-sm.btn-outline-danger(type="submit") Leave
+
+          form(method="POST" action=`/teams/${quiz.id}/create`)
+            .input-group.mt-2
+              input.form-control(type="text" name="name" placeholder="Team name" required)
+              button.btn.btn-outline-primary(type="submit") Create Team
+
+          form.mt-2(method="POST" action=`/teams/${quiz.id}/individual`)
+            button.btn.btn-sm.btn-outline-secondary(type="submit") Play as Individual
+
+block scripts
+  script.
+    const socket = io('/quiz');
+    socket.emit('quiz:join', { quizId: !{quiz.id} });
+    socket.on('player:joined', function() { location.reload(); });
+    socket.on('quiz:started', function() { window.location.href = '/quiz/!{quiz.id}/play'; });

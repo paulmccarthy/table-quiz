@@ -1,0 +1,28 @@
+extends ../layouts/main
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .card
+        .card-header
+          h3= result.quiz_title
+          small Completed: #{new Date(result.completed_at).toLocaleDateString()}
+        .card-body
+          h5 Final Rankings
+          if result.result_data && result.result_data.leaderboard
+            table.table
+              thead
+                tr
+                  th Rank
+                  th Name
+                  th Score
+              tbody
+                each entry, index in result.result_data.leaderboard
+                  tr
+                    td= index + 1
+                    td= entry.name
+                    td= entry.total_score
+          .mt-3
+            a.btn.btn-outline-secondary(href=`/export/${result.quiz_id}/csv`) Export CSV
+            |
+            a.btn.btn-outline-secondary(href=`/export/${result.quiz_id}/pdf`) Export PDF

@@ -1,0 +1,16 @@
+if drawings && drawings.length
+  each drawing in drawings
+    .card.mb-2
+      .card-body
+        p.mb-1 Q#{drawing.question_order} - #{drawing.display_name}
+        if drawing.drawing_path
+          img(src=drawing.drawing_path style="max-width:300px;border:1px solid #ccc")
+        .mt-2
+          form.d-inline(method="POST" action=`/answers/${drawing.id}/mark`)
+            input(type="hidden" name="isCorrect" value="true")
+            button.btn.btn-sm.btn-success(type="submit") Correct
+          form.d-inline.ms-1(method="POST" action=`/answers/${drawing.id}/mark`)
+            input(type="hidden" name="isCorrect" value="false")
+            button.btn.btn-sm.btn-danger(type="submit") Incorrect
+else
+  p No drawings to review.

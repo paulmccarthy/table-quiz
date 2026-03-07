@@ -1,0 +1,48 @@
+extends ../layouts/main
+
+block content
+  .row
+    .col-md-8.mx-auto
+      .card
+        .card-header
+          h3= question ? 'Edit Question' : 'Create Question'
+        .card-body
+          form(method="POST" action=question ? `/questions/${question.id}/edit` : '/questions/create' enctype="multipart/form-data")
+            .mb-3
+              label.form-label(for="text") Question Text
+              textarea.form-control#text(name="text" rows="3" required)= question ? question.text : ''
+            .row
+              .col-md-4.mb-3
+                label.form-label(for="contentType") Content Type
+                select.form-select#contentType(name="contentType")
+                  option(value="text" selected=(question && question.content_type === 'text')) Text Only
+                  option(value="image" selected=(question && question.content_type === 'image')) Image
+                  option(value="audio" selected=(question && question.content_type === 'audio')) Audio
+                  option(value="video" selected=(question && question.content_type === 'video')) Video
+              .col-md-4.mb-3
+                label.form-label(for="answerType") Answer Type
+                select.form-select#answerType(name="answerType")
+                  option(value="multiple_choice" selected=(question && question.answer_type === 'multiple_choice')) Multiple Choice
+                  option(value="freeform_text" selected=(question && question.answer_type === 'freeform_text')) Freeform Text
+                  option(value="drawing" selected=(question && question.answer_type === 'drawing')) Drawing
+              .col-md-4.mb-3
+                label.form-label(for="difficulty") Difficulty
+                select.form-select#difficulty(name="difficulty")
+                  option(value="easy" selected=(question && question.difficulty === 'easy')) Easy
+                  option(value="medium" selected=(question && question.difficulty === 'medium')) Medium
+                  option(value="hard" selected=(question && question.difficulty === 'hard')) Hard
+            .mb-3
+              label.form-label(for="media") Media File
+              input.form-control#media(type="file" name="media" accept="image/*,audio/*,video/*")
+              if question && question.media_path
+                small.text-muted Current: #{question.media_path}
+            .mb-3
+              label.form-label(for="correctAnswer") Correct Answer
+              input.form-control#correctAnswer(type="text" name="correctAnswer" value=(question ? question.correct_answer : ''))
+            .mb-3
+              label.form-label(for="options") Options (JSON array for multiple choice)
+              textarea.form-control#options(name="options" rows="2" placeholder='["Option A","Option B","Option C","Option D"]')= question && question.options ? JSON.stringify(question.options) : ''
+            .mb-3
+              label.form-label(for="timeLimit") Time Limit (seconds, 0 = manual advance)
+              input.form-control#timeLimit(type="number" name="timeLimit" min="0" value=(question ? question.time_limit : 0))
+            button.btn.btn-primary(type="submit")= question ? 'Update' : 'Create'
