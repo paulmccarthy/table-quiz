@@ -1,5 +1,22 @@
 # Changelog
 
+## [v0.3]
+
+### ESLint Migration
+- Migrated from ESLint 8 legacy config (`.eslintrc.js`) to ESLint 9 flat config (`eslint.config.js`).
+- Replaced `eslint-config-airbnb-base` and `eslint-plugin-import` with `@eslint/js`, `eslint-plugin-import-x`, and `globals` for ESLint 9 compatibility.
+- Fixed all lint errors across source and test files (unused variables, import ordering, destructuring, etc.).
+
+### Security
+- Removed `csurf` — archived/deprecated dependency with a known `cookie` vulnerability (GHSA-pxg6-pf52-xh8x). The package was not used in the codebase.
+- Patched `diff` (DoS via `parsePatch`/`applyPatch`, GHSA-73rr-hh4g-fpgx) and `serialize-javascript` (RCE via `RegExp.flags`, GHSA-5c6j-r48x-rmvq) vulnerabilities in mocha's dependency tree via npm overrides.
+- Resolved all `npm audit` findings — 0 vulnerabilities.
+
+### Dependencies
+- **ESLint**: `8.57.1` -> `9.39.4`
+- **Added**: `@eslint/eslintrc`, `@eslint/js`, `eslint-plugin-import-x`, `globals`
+- **Removed**: `eslint-config-airbnb-base`, `eslint-plugin-import`, `csurf`
+
 ## [v0.2]
 
 ### Admin Interface
