@@ -1,6 +1,6 @@
-const pool = require('../config/database');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const pool = require('../config/database');
 
 const Quiz = {
   async create({ title, quizmasterId, isPublic = false, numRounds = 1 }) {

@@ -28,6 +28,7 @@ const ScoreService = {
 
     // Upsert scores
     for (const entry of Object.values(scoreMap)) {
+      // eslint-disable-next-line no-await-in-loop
       await pool.execute(
         `INSERT INTO scores (quiz_id, round_id, team_id, user_id, score)
          VALUES (?, ?, ?, ?, ?)
@@ -78,6 +79,7 @@ const ScoreService = {
     return rows;
   },
 
+  // eslint-disable-next-line no-unused-vars
   async autoMarkAnswers(roundQuestionId, correctAnswer, answerType) {
     const answers = await Answer.findByRoundQuestion(roundQuestionId);
     for (const answer of answers) {
@@ -89,6 +91,7 @@ const ScoreService = {
         isCorrect = answer.answer_value
           && answer.answer_value.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
       }
+      // eslint-disable-next-line no-await-in-loop
       await Answer.autoMark(answer.id, isCorrect);
     }
   },

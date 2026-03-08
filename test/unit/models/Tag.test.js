@@ -90,7 +90,7 @@ describe('Tag Model', () => {
     it('should normalize the search prefix', async () => {
       mockPool.execute.resolves([[]]);
       await Tag.search('  SCI  ');
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1][0]).to.equal('sci%');
     });
   });
@@ -109,7 +109,7 @@ describe('Tag Model', () => {
       mockPool.execute.resolves([{}]);
       await Tag.addToQuestion(10, 5);
       expect(mockPool.execute.calledOnce).to.be.true;
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1]).to.deep.equal([10, 5]);
     });
   });
@@ -119,7 +119,7 @@ describe('Tag Model', () => {
       mockPool.execute.resolves([{}]);
       await Tag.removeFromQuestion(10, 5);
       expect(mockPool.execute.calledOnce).to.be.true;
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1]).to.deep.equal([10, 5]);
     });
   });
@@ -153,7 +153,7 @@ describe('Tag Model', () => {
       mockPool.execute.resolves([{}]);
       await Tag.addToQuiz(20, 5);
       expect(mockPool.execute.calledOnce).to.be.true;
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1]).to.deep.equal([20, 5]);
     });
   });
@@ -163,7 +163,7 @@ describe('Tag Model', () => {
       mockPool.execute.resolves([{}]);
       await Tag.removeFromQuiz(20, 5);
       expect(mockPool.execute.calledOnce).to.be.true;
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1]).to.deep.equal([20, 5]);
     });
   });

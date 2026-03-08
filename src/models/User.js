@@ -1,5 +1,5 @@
-const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
+const pool = require('../config/database');
 
 const SALT_ROUNDS = 12;
 

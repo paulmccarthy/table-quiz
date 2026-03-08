@@ -49,7 +49,7 @@ const AuthController = {
       await AuthService.requestPasswordReset(req.body.email);
       req.flash('success', 'If an account exists with that email, a reset link has been sent.');
       res.redirect('/auth/login');
-    } catch (err) {
+    } catch { // error intentionally not used - generic message shown
       req.flash('error', 'An error occurred.');
       res.redirect('/auth/reset-password');
     }

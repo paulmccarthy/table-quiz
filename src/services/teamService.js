@@ -1,5 +1,4 @@
 const Team = require('../models/Team');
-const pool = require('../config/database');
 
 const TeamService = {
   async createTeam({ quizId, name, userId }) {
@@ -28,10 +27,12 @@ const TeamService = {
     const assignments = [];
     for (let i = 0; i < shuffled.length; i++) {
       const team = teams[i % teams.length];
+      // eslint-disable-next-line no-await-in-loop
       const count = await Team.getMemberCount(team.id);
       if (count >= Team.MAX_TEAM_SIZE) {
         throw new Error(`Team "${team.name}" is full.`);
       }
+      // eslint-disable-next-line no-await-in-loop
       await Team.addMember(team.id, shuffled[i]);
       assignments.push({ userId: shuffled[i], teamId: team.id, teamName: team.name });
     }
@@ -41,6 +42,7 @@ const TeamService = {
   async getTeamsWithMembers(quizId) {
     const teams = await Team.findByQuiz(quizId);
     for (const team of teams) {
+      // eslint-disable-next-line no-await-in-loop
       team.members = await Team.getMembers(team.id);
     }
     return teams;

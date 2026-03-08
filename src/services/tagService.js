@@ -42,11 +42,8 @@ const TagService = {
     const pool = require('../config/database');
     let sql = 'SELECT DISTINCT q.* FROM questions q';
     const params = [];
-    let hasTagJoin = false;
-
     if (tagIds && tagIds.length > 0) {
       sql += ' JOIN question_tags qt ON q.id = qt.question_id';
-      hasTagJoin = true;
     }
 
     const conditions = [];

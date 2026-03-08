@@ -6,7 +6,7 @@ const TeamController = {
   async create(req, res) {
     try {
       const { name } = req.body;
-      const quizId = req.params.quizId;
+      const {quizId} = req.params;
       await TeamService.createTeam({ quizId, name, userId: req.user.id });
       req.flash('success', 'Team created.');
       res.redirect(`/quiz/${quizId}/lobby`);
@@ -51,7 +51,7 @@ const TeamController = {
 
   async randomAssign(req, res) {
     try {
-      const quizId = req.params.quizId;
+      const {quizId} = req.params;
       const [participants] = await pool.execute(
         'SELECT user_id FROM quiz_participants WHERE quiz_id = ? AND admitted = TRUE',
         [quizId],

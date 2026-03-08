@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const express = require('express');
 const path = require('path');
+const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const flash = require('connect-flash');
@@ -22,7 +22,6 @@ const tagRoutes = require('./routes/tagRoutes');
 
 const QuizResult = require('./models/QuizResult');
 const { ensureAuthenticated } = require('./middleware/auth');
-const { requireRole } = require('./middleware/roles');
 const LeaderboardController = require('./controllers/leaderboardController');
 
 const app = express();

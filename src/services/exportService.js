@@ -1,14 +1,13 @@
 const PDFDocument = require('pdfkit');
 const { stringify } = require('csv-stringify/sync');
 const Answer = require('../models/Answer');
-const ScoreService = require('./scoreService');
 const Quiz = require('../models/Quiz');
+const ScoreService = require('./scoreService');
 
 const ExportService = {
   async generateCSV(quizId) {
     const quiz = await Quiz.findById(quizId);
     const answers = await Answer.findByQuiz(quizId);
-    const leaderboard = await ScoreService.getLeaderboard(quizId);
 
     const records = answers.map((a) => ({
       quiz_title: quiz.title,

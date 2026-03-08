@@ -12,8 +12,7 @@ describe('Roles Middleware', () => {
         findById: sinon.stub().resolves({ id: 1, quizmaster_id: 1 }),
       },
     });
-    requireRole = roles.requireRole;
-    requireQuizOwnerOrAdmin = roles.requireQuizOwnerOrAdmin;
+    ({ requireRole, requireQuizOwnerOrAdmin } = roles);
   });
 
   describe('requireRole', () => {

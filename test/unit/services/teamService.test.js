@@ -37,7 +37,7 @@ describe('TeamService', () => {
     });
 
     it('should create team without member', async () => {
-      const result = await TeamService.createTeam({ quizId: 1, name: 'Team B' });
+      await TeamService.createTeam({ quizId: 1, name: 'Team B' });
       expect(mockTeam.addMember.called).to.be.false;
     });
   });

@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const User = require('../models/User');
-const EmailService = require('./emailService');
 const AppSettings = require('../models/AppSettings');
+const EmailService = require('./emailService');
 
 const AuthService = {
   async register({ email, password, displayName, role = 'player' }) {

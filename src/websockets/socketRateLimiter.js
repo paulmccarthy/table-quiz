@@ -43,7 +43,7 @@ function socketRateLimiter(socket, next) {
   const originalOnevent = socket.onevent;
   socket.onevent = function rateLimitedOnevent(packet) {
     const eventName = packet.data ? packet.data[0] : '';
-    let allowed = true;
+    let allowed;
 
     if (eventName === 'answer:submit' || eventName === 'answer:update') {
       allowed = checkRate(socket, 'answer', 10);

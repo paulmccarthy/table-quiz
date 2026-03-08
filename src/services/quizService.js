@@ -6,6 +6,7 @@ const QuizService = {
     const quiz = await Quiz.create({ title, quizmasterId, isPublic, numRounds });
     // Create rounds
     for (let i = 1; i <= numRounds; i++) {
+      // eslint-disable-next-line no-await-in-loop
       await Round.create({ quizId: quiz.id, roundNumber: i });
     }
     return quiz;
@@ -36,6 +37,7 @@ const QuizService = {
     if (!quiz) return null;
     const rounds = await Round.findByQuiz(quizId);
     for (const round of rounds) {
+      // eslint-disable-next-line no-await-in-loop
       round.questions = await Round.getQuestions(round.id);
     }
     quiz.rounds = rounds;

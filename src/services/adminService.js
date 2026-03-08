@@ -1,4 +1,4 @@
-const { parse } = require('csv-parse/sync'); // eslint-disable-line import/no-unresolved
+const { parse } = require('csv-parse/sync');
 const AppSettings = require('../models/AppSettings');
 const Question = require('../models/Question');
 const Tag = require('../models/Tag');
@@ -23,6 +23,7 @@ const AdminService = {
     ];
     for (const key of allowedKeys) {
       if (key in settings) {
+        // eslint-disable-next-line no-await-in-loop
         await AppSettings.set(key, settings[key] === 'on' || settings[key] === 'true' ? 'true' : 'false', adminId);
       }
     }
@@ -65,6 +66,7 @@ const AdminService = {
         const q = questions[i];
         this.validateQuestion(q, lineNum);
 
+        // eslint-disable-next-line no-await-in-loop
         const created = await Question.create({
           text: q.text,
           contentType: q.content_type || 'text',
@@ -78,7 +80,9 @@ const AdminService = {
 
         if (q.tags && q.tags.length > 0) {
           for (const tagName of q.tags) {
+            // eslint-disable-next-line no-await-in-loop
             const tag = await Tag.findOrCreate(tagName.trim());
+            // eslint-disable-next-line no-await-in-loop
             await Tag.addToQuestion(created.id, tag.id);
           }
         }

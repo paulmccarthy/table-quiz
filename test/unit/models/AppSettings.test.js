@@ -64,14 +64,14 @@ describe('AppSettings Model', () => {
       mockPool.execute.resolves([{}]);
       await AppSettings.set('some_key', 'some_value', 1);
       expect(mockPool.execute.calledOnce).to.be.true;
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1]).to.deep.equal(['some_key', 'some_value', 1]);
     });
 
     it('should convert value to string', async () => {
       mockPool.execute.resolves([{}]);
       await AppSettings.set('some_key', true, null);
-      const args = mockPool.execute.firstCall.args;
+      const {args} = mockPool.execute.firstCall;
       expect(args[1][1]).to.equal('true');
     });
   });
