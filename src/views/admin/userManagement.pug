@@ -1,0 +1,53 @@
+extends ../layouts/main
+
+block content
+  h2 User Management
+  if users && users.length
+    table.table
+      thead
+        tr
+          th ID
+          th Email
+          th Name
+          th Role
+          th Verified
+          th Actions
+      tbody
+        each u in users
+          tr
+            td= u.id
+            td= u.email
+            td= u.display_name
+            td
+              span.badge(class={'player':'bg-secondary','quizmaster':'bg-primary','admin':'bg-danger'}[u.role])= u.role
+            td
+              if u.email_verified
+                span.badge.bg-success Yes
+              else
+                span.badge.bg-warning No
+            td
+              .btn-group
+                button.btn.btn-sm.btn-outline-primary(type="button" data-bs-toggle="modal" data-bs-target=`#resetModal${u.id}`) Reset Password
+
+          //- Password reset modal for each user
+          .modal.fade(id=`resetModal${u.id}` tabindex="-1")
+            .modal-dialog
+              .modal-content
+                .modal-header
+                  h5.modal-title Reset Password: #{u.email}
+                  button.btn-close(type="button" data-bs-dismiss="modal")
+                .modal-body
+                  form(method="POST" action=`/admin/users/${u.id}/reset-password` id=`resetForm${u.id}`)
+                    .mb-3
+                      label.form-label Set New Password
+                      input.form-control(type="password" name="password" minlength="8" placeholder="Enter new password")
+                    .text-center
+                      span.text-muted - or -
+                    .mb-3.form-check.mt-2
+                      input.form-check-input(type="checkbox" name="sendResetLink" value="on" id=`sendLink${u.id}`)
+                      label.form-check-label(for=`sendLink${u.id}`) Send reset link to #{u.email}
+                .modal-footer
+                  button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancel
+                  button.btn.btn-primary(type="submit" form=`resetForm${u.id}`) Reset Password
+  else
+    p No users found.

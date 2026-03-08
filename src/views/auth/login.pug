@@ -15,10 +15,13 @@ block content
               label.form-label(for="password") Password
               input.form-control#password(type="password" name="password" required)
             button.btn.btn-primary.w-100(type="submit") Login
-          hr
-          .d-grid.gap-2
-            a.btn.btn-outline-primary(href="/auth/facebook") Login with Facebook
-            a.btn.btn-outline-dark(href="/auth/github") Login with GitHub
+          if oauth && (oauth.facebook || oauth.github)
+            hr
+            .d-grid.gap-2
+              if oauth.facebook
+                a.btn.btn-outline-primary(href="/auth/facebook") Login with Facebook
+              if oauth.github
+                a.btn.btn-outline-dark(href="/auth/github") Login with GitHub
           hr
           .text-center
             a(href="/auth/reset-password") Forgot password?

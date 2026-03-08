@@ -6,6 +6,7 @@ describe('AuthService', () => {
   let AuthService;
   let mockUser;
   let mockEmail;
+  let mockAppSettings;
 
   beforeEach(() => {
     mockUser = {
@@ -21,9 +22,13 @@ describe('AuthService', () => {
       sendVerificationEmail: sinon.stub().resolves(),
       sendPasswordResetEmail: sinon.stub().resolves(),
     };
+    mockAppSettings = {
+      isEmailVerificationEnabled: sinon.stub().resolves(true),
+    };
     AuthService = proxyquire('../../../src/services/authService', {
       '../models/User': mockUser,
       './emailService': mockEmail,
+      '../models/AppSettings': mockAppSettings,
     });
   });
 
@@ -40,6 +45,21 @@ describe('AuthService', () => {
       });
       expect(result.id).to.equal(1);
       expect(mockEmail.sendVerificationEmail.calledOnce).to.be.true;
+    });
+
+    it('should auto-verify when email verification is disabled', async () => {
+      mockAppSettings.isEmailVerificationEnabled.resolves(false);
+      mockUser.findByEmail.resolves(null);
+      mockUser.create.resolves({ id: 1, email: 'test@test.com', verificationToken: 'tok' });
+      mockUser.verifyEmail.resolves(true);
+      const result = await AuthService.register({
+        email: 'test@test.com',
+        password: 'password',
+        displayName: 'Test',
+      });
+      expect(result.id).to.equal(1);
+      expect(mockEmail.sendVerificationEmail.called).to.be.false;
+      expect(mockUser.verifyEmail.calledWith('tok')).to.be.true;
     });
 
     it('should throw when email exists', async () => {

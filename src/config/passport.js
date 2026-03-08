@@ -3,6 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const User = require('../models/User');
+const AppSettings = require('../models/AppSettings');
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -48,6 +49,10 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        const enabled = await AppSettings.getBoolean('oauth_facebook_enabled', true);
+        if (!enabled) {
+          return done(null, false, { message: 'Facebook login is currently disabled.' });
+        }
         let user = await User.findByOAuth('facebook', profile.id);
         if (!user) {
           const email = profile.emails && profile.emails[0] ? profile.emails[0].value : `fb_${profile.id}@placeholder.com`;
@@ -77,6 +82,10 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        const enabled = await AppSettings.getBoolean('oauth_github_enabled', true);
+        if (!enabled) {
+          return done(null, false, { message: 'GitHub login is currently disabled.' });
+        }
         let user = await User.findByOAuth('github', profile.id);
         if (!user) {
           const email = profile.emails && profile.emails[0] ? profile.emails[0].value : `gh_${profile.id}@placeholder.com`;

@@ -1,7 +1,7 @@
 const Quiz = require('../models/Quiz');
 const QuizService = require('../services/quizService');
 const EmailService = require('../services/emailService');
-const QuizParticipant = require('../models/Quiz');
+const TagService = require('../services/tagService');
 const pool = require('../config/database');
 
 const QuizController = {
@@ -18,19 +18,25 @@ const QuizController = {
     res.render('quiz/manage', { title: 'My Quizzes', quizzes });
   },
 
-  getCreate(req, res) {
-    res.render('quiz/create', { title: 'Create Quiz' });
+  async getCreate(req, res) {
+    res.render('quiz/create', { title: 'Create Quiz', quiz: null, tags: [] });
   },
 
   async postCreate(req, res) {
     try {
-      const { title, isPublic, numRounds } = req.body;
+      const {
+        title, isPublic, numRounds, tags,
+      } = req.body;
       const quiz = await QuizService.createQuiz({
         title,
         quizmasterId: req.user.id,
         isPublic: isPublic === 'on' || isPublic === 'true',
         numRounds: parseInt(numRounds, 10) || 1,
       });
+      const tagNames = tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+      if (tagNames.length > 0) {
+        await TagService.setQuizTags(quiz.id, tagNames);
+      }
       req.flash('success', 'Quiz created successfully.');
       res.redirect(`/quiz/${quiz.id}/edit`);
     } catch (err) {
@@ -45,17 +51,22 @@ const QuizController = {
       req.flash('error', 'Quiz not found.');
       return res.redirect('/quiz');
     }
-    res.render('quiz/create', { title: 'Edit Quiz', quiz });
+    const tags = await TagService.getQuizTags(quiz.id);
+    res.render('quiz/create', { title: 'Edit Quiz', quiz, tags });
   },
 
   async postUpdate(req, res) {
     try {
-      const { title, isPublic, numRounds } = req.body;
+      const {
+        title, isPublic, numRounds, tags,
+      } = req.body;
       await Quiz.update(req.params.id, {
         title,
         is_public: isPublic === 'on' || isPublic === 'true',
         num_rounds: parseInt(numRounds, 10) || 1,
       });
+      const tagNames = tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+      await TagService.setQuizTags(req.params.id, tagNames);
       req.flash('success', 'Quiz updated.');
       res.redirect(`/quiz/${req.params.id}/edit`);
     } catch (err) {

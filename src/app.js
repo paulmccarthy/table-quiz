@@ -17,6 +17,8 @@ const questionRoutes = require('./routes/questionRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const answerRoutes = require('./routes/answerRoutes');
 const exportRoutes = require('./routes/exportRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const tagRoutes = require('./routes/tagRoutes');
 
 const QuizResult = require('./models/QuizResult');
 const { ensureAuthenticated } = require('./middleware/auth');
@@ -88,11 +90,13 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/admin', userRoutes);
+app.use('/admin', adminRoutes);
 app.use('/quiz', quizRoutes);
 app.use('/questions', questionRoutes);
 app.use('/teams', teamRoutes);
 app.use('/answers', answerRoutes);
 app.use('/export', exportRoutes);
+app.use('/api/tags', tagRoutes);
 
 // Leaderboard routes
 app.get('/quiz/:quizId/leaderboard', ensureAuthenticated, LeaderboardController.getLeaderboard);

@@ -1,0 +1,37 @@
+extends ../layouts/main
+
+block content
+  h2 Bulk Upload Questions
+  .row
+    .col-md-8.mx-auto
+      .card.mb-4
+        .card-header
+          h4 Upload Questions
+        .card-body
+          form(method="POST" action="/admin/bulk-upload" enctype="multipart/form-data")
+            .mb-3
+              label.form-label(for="file") Select CSV or JSON File
+              input.form-control#file(type="file" name="file" accept=".csv,.json" required)
+            .mb-3
+              h6 CSV Format
+              code text,content_type,answer_type,difficulty,correct_answer,options,tags,time_limit
+              p.text-muted.mt-1 Options and tags use pipe (|) as delimiter. Example: Option A|Option B|Option C
+            .mb-3
+              h6 JSON Format
+              pre.bg-light.p-2
+                | [{"text": "Question?", "correct_answer": "A", "options": ["A","B","C"], "tags": ["tag1","tag2"]}]
+            button.btn.btn-primary(type="submit") Upload
+
+      if results
+        .card
+          .card-header
+            h4 Upload Results
+          .card-body
+            .alert.alert-info
+              strong #{results.imported} questions imported successfully.
+            if results.errors && results.errors.length
+              .alert.alert-warning
+                strong #{results.errors.length} rows had errors:
+                ul.mb-0
+                  each err in results.errors
+                    li Line #{err.line}: #{err.error}

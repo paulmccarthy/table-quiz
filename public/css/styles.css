@@ -36,3 +36,29 @@ body {
 .table-success {
   font-weight: bold;
 }
+
+.tag-input-container {
+  position: relative;
+}
+
+.tag-input-container .tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.tag-input-container .tag-suggestions {
+  position: absolute;
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.tag-chip {
+  cursor: default;
+}
+
+.tag-chip .btn-close {
+  cursor: pointer;
+}

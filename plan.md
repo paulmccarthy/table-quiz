@@ -14,7 +14,7 @@
   │   │   ├── database.js         # MySQL connection/pool config
   │   │   ├── session.js          # Session store config
   │   │   ├── storage.js          # Media storage backend config
-  │   │   ├── passport.js         # Passport strategies (local, OAuth, passkey)
+  │   │   ├── passport.js         # Passport strategies (local, OAuth per app_settings, passkey)
   │   │   └── rateLimiter.js      # Rate limiting config (HTTP + WebSocket)
   │   ├── controllers/
   │   │   ├── authController.js
@@ -25,6 +25,8 @@
   │   │   ├── roundController.js
   │   │   ├── answerController.js
   │   │   ├── leaderboardController.js
+  │   │   ├── adminController.js
+  │   │   ├── tagController.js
   │   │   └── exportController.js
   │   ├── models/
   │   │   ├── User.js
@@ -33,6 +35,8 @@
   │   │   ├── Round.js
   │   │   ├── Team.js
   │   │   ├── Answer.js
+  │   │   ├── Tag.js
+  │   │   ├── AppSettings.js
   │   │   └── QuizResult.js
   │   ├── middleware/
   │   │   ├── auth.js             # Authentication check
@@ -46,6 +50,8 @@
   │   │   ├── questionRoutes.js
   │   │   ├── teamRoutes.js
   │   │   ├── answerRoutes.js
+  │   │   ├── adminRoutes.js
+  │   │   ├── tagRoutes.js
   │   │   └── exportRoutes.js
   │   ├── websockets/
   │   │   ├── index.js            # Socket.io setup + auth middleware
@@ -61,6 +67,8 @@
   │   │   ├── scoreService.js
   │   │   ├── storageService.js   # Abstraction over storage backends
   │   │   ├── emailService.js     # Email verification & invitations
+  │   │   ├── tagService.js       # Tag CRUD, autocomplete, case-insensitive matching
+  │   │   ├── adminService.js     # Admin settings, bulk upload, user management
   │   │   └── exportService.js    # CSV/PDF generation
   │   ├── storage/
   │   │   ├── localAdapter.js     # Local filesystem storage
@@ -91,11 +99,15 @@
   │       │   ├── list.pug
   │       │   └── detail.pug
   │       ├── admin/
-  │       │   └── dashboard.pug
+  │       │   ├── dashboard.pug
+  │       │   ├── settings.pug       # OAuth providers, email verification toggle
+  │       │   ├── userManagement.pug  # User list, password reset
+  │       │   └── bulkUpload.pug     # Bulk question upload
   │       └── partials/
   │           ├── navbar.pug
   │           ├── drawingCanvas.pug
   │           ├── drawingReview.pug  # Quizmaster drawing review panel
+  │           ├── tagInput.pug       # Reusable tag autocomplete input component
   │           └── flash.pug
   ├── public/
   │   ├── css/
@@ -103,7 +115,9 @@
   │   │   ├── socket-client.js
   │   │   ├── drawing.js          # Canvas drawing tool
   │   │   ├── quiz-player.js      # Player-side quiz logic
-  │   │   └── quiz-master.js      # Quizmaster-side quiz logic
+  │   │   ├── quiz-master.js      # Quizmaster-side quiz logic
+  │   │   ├── tag-input.js        # Tag autocomplete component (client-side)
+  │   │   └── bulk-upload.js      # Bulk upload form handling
   │   └── uploads/                # Default local media storage
   ├── migrations/                 # Database migration scripts
   ├── test/
@@ -120,7 +134,7 @@
 - **Core:** express, mysql2, express-session, express-mysql-session, socket.io, pug
 - **Auth:** passport, passport-local, passport-facebook, passport-microsoft, passport-github2, @simplewebauthn/server (passkeys), bcryptjs
 - **Validation & Security:** express-rate-limit, helmet, express-validator, csurf, cors
-- **Media & Export:** multer (file uploads), pdfkit (PDF export), csv-stringify (CSV export)
+- **Media & Export:** multer (file uploads), pdfkit (PDF export), csv-stringify (CSV export), csv-parse (CSV bulk upload parsing)
 - **Email:** nodemailer
 - **Utilities:** dotenv, uuid, crypto
 - **Dev:** mocha, chai, sinon, nyc (coverage), eslint, eslint-config-airbnb-base, supertest, socket.io-client
@@ -298,6 +312,53 @@ Create migration scripts executed in order. Key tables:
 - `idx_quiz_results_quiz_id` on (quiz_id)
 - `idx_quiz_results_quizmaster_id` on (quizmaster_id)
 
+#### tags
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT AUTO_INCREMENT | PK |
+| name | VARCHAR(255) | NOT NULL |
+| normalized_name | VARCHAR(255) | NOT NULL, UNIQUE, lowercase version of name for case-insensitive matching |
+| created_at | TIMESTAMP | |
+
+**Indexes:**
+- `UNIQUE(normalized_name)` — enforce case-insensitive uniqueness
+- `idx_tags_normalized_name` on (normalized_name) — fast autocomplete lookups
+
+#### question_tags
+| Column | Type | Notes |
+|--------|------|-------|
+| question_id | INT | FK -> questions.id, ON DELETE CASCADE |
+| tag_id | INT | FK -> tags.id, ON DELETE CASCADE |
+| PRIMARY KEY(question_id, tag_id) | | |
+
+**Indexes:**
+- `idx_question_tags_tag_id` on (tag_id)
+
+#### quiz_tags
+| Column | Type | Notes |
+|--------|------|-------|
+| quiz_id | INT | FK -> quizzes.id, ON DELETE CASCADE |
+| tag_id | INT | FK -> tags.id, ON DELETE CASCADE |
+| PRIMARY KEY(quiz_id, tag_id) | | |
+
+**Indexes:**
+- `idx_quiz_tags_tag_id` on (tag_id)
+
+#### app_settings
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT AUTO_INCREMENT | PK |
+| setting_key | VARCHAR(100) | UNIQUE, NOT NULL |
+| setting_value | TEXT | NOT NULL |
+| updated_at | TIMESTAMP | |
+| updated_by | INT | FK -> users.id, nullable |
+
+**Initial rows:**
+- `oauth_facebook_enabled` — 'true' or 'false'
+- `oauth_microsoft_enabled` — 'true' or 'false'
+- `oauth_github_enabled` — 'true' or 'false'
+- `email_verification_enabled` — 'true' or 'false'
+
 #### sessions (managed by express-mysql-session)
 
 ---
@@ -313,13 +374,14 @@ Create migration scripts executed in order. Key tables:
 4. **Session store** - express-mysql-session configured
 5. **Rate limiter** - express-rate-limit on auth and API endpoints
 6. **User model & auth**
-   - Registration with email verification (nodemailer)
+   - Registration with email verification (nodemailer) — conditionally enforced based on `email_verification_enabled` app setting
    - Local login with bcrypt password hashing
    - Password reset flow (token-based)
-   - Passport strategies: local, Facebook, Microsoft, GitHub
+   - Passport strategies: local (always enabled), Facebook, Microsoft, GitHub (each conditionally loaded based on `app_settings`)
    - Passkey registration and authentication (@simplewebauthn)
    - Role-based middleware (admin, quizmaster, player)
    - Admin bypass: roles middleware grants admins access to all resources
+   - **AppSettings model** initialized with default values on first migration (all OAuth enabled, email verification enabled)
 7. **Auth views** - login, register, reset password, verify email pages
 8. **Tests** - Unit tests for all auth logic, middleware, models
 
@@ -331,9 +393,18 @@ Create migration scripts executed in order. Key tables:
    - Separate `content_type` (text/image/audio/video) from `answer_type` (multiple_choice/freeform_text/drawing)
    - Media upload via multer routed through storageService (local adapter by default)
    - Support all content types: text-only, picture, audio, video
-   - Support all answer types: multiple choice (with options JSON), freeform text, drawing
+   - Support all answer types: multiple choice, freeform text, drawing
+   - **Multiple choice answer entry:** Each answer option is entered via a separate text box in the form UI (not as JSON). The form allows adding/removing option fields dynamically. Options are stored as JSON in the `options` column but the user never sees or edits JSON directly.
    - Questions reusable across quizzes
-2. **Quiz CRUD**
+2. **Question tagging**
+   - Tag model and tagService for CRUD operations on tags
+   - Tags are case insensitive: stored with original casing in `name`, normalized to lowercase in `normalized_name` for uniqueness and matching
+   - Tags can contain spaces
+   - Questions can have multiple tags via `question_tags` junction table
+   - Tags can be added, removed, and updated at any time
+   - **Tag autocomplete:** `GET /api/tags?q=<prefix>` returns matching tags (case-insensitive prefix search on `normalized_name`). If no match, the user can create a new tag by pressing enter.
+   - Tag input UI (tagInput.pug partial + tag-input.js): reusable component rendering as a text input with dropdown suggestions; selected tags shown as removable chips/badges
+3. **Quiz CRUD**
    - Create/edit/delete quizzes (quizmasters own quizzes only, admins access all)
    - Configure rounds and questions per round
    - Set public/private, generate access codes
@@ -344,15 +415,25 @@ Create migration scripts executed in order. Key tables:
      - Tokens invalidated when quiz moves to 'completed' status
    - Email invitations via emailService (sends invite link)
    - **One active quiz enforcement:** quizService checks that quizmaster has no quiz with status 'active' or 'paused' before allowing activation
-3. **Quiz access routes**
+4. **Quiz tagging**
+   - Quizzes can have multiple tags via `quiz_tags` junction table
+   - Uses the same tag autocomplete component as question tagging
+   - Tags can be added, removed, and updated at any time
+5. **Question search for quiz building**
+   - When adding questions to a quiz, quizmasters can search the question bank by:
+     - **Tags:** filter questions that have any of the selected tags
+     - **Question content:** full-text search on `questions.text` column
+   - Search does NOT include answers — only question text and tags are searchable
+   - Search UI integrated into quiz create/manage views with combined tag filter and text search input
+6. **Quiz access routes**
    - `GET /quiz/:invite_token` — dedicated per-quiz login/entry page (quizLogin.pug)
    - `POST /quiz/join` — join via access code from the general join page
    - Both routes validate token/code, check expiry, and redirect to lobby
-4. **Round configuration**
+7. **Round configuration**
    - Add/remove/reorder rounds
    - Assign questions to rounds with fixed ordering (question_order column)
-5. **Views** - Question bank, quiz creation/management forms, per-quiz login page
-6. **Tests** - Unit tests for all quiz/question/round logic, invite token lifecycle
+8. **Views** - Question bank, quiz creation/management forms, per-quiz login page, tag input component, question search
+9. **Tests** - Unit tests for all quiz/question/round logic, invite token lifecycle, tag CRUD, tag autocomplete, question search
 
 ### Phase 3: Team & Player Management
 **Goal:** Players can join quizzes and form teams.
@@ -483,15 +564,30 @@ Create migration scripts executed in order. Key tables:
 
 1. **Admin dashboard**
    - View all users, quizzes, and active sessions
-   - Manage users: change roles, reset passwords, disable accounts
+   - Manage users: change roles, disable accounts
    - Access and manage any quiz (admin bypass in roles middleware)
    - **Admin privilege enforcement:**
      - roles middleware: if user.role === 'admin', skip ownership checks
      - Admin can view/edit/delete any quiz regardless of quizmaster_id
      - Admin can view all quiz history and export any quiz results
      - Admin can force-end or pause any active quiz
-2. **Views** - Admin dashboard
-3. **Tests** - Unit tests for admin operations, ownership bypass
+2. **Admin settings** (settings.pug)
+   - **OAuth provider management:** toggle Facebook, Microsoft, GitHub OAuth on/off via `app_settings` table. When a provider is disabled, its Passport strategy is not loaded and the login page hides the corresponding button. Changes take effect on next server request (settings cached with short TTL or reloaded per-request).
+   - **Email verification toggle:** enable/disable email verification for new accounts via `app_settings`. When disabled, new users are auto-verified on registration.
+   - Settings stored in `app_settings` table, managed via adminService
+3. **User password reset** (userManagement.pug)
+   - Admin can view user list with search/filter
+   - **Direct password reset:** admin sets a new password for a user directly (password hashed with bcrypt before storing)
+   - **Send reset link:** admin triggers a password reset email to the user's registered email address using the existing token-based password reset flow via emailService
+4. **Bulk question upload** (bulkUpload.pug)
+   - Upload questions via CSV or JSON file
+   - **CSV format:** columns for text, content_type, answer_type, difficulty, correct_answer, options (pipe-delimited for multiple choice), tags (pipe-delimited)
+   - **JSON format:** array of question objects with same fields
+   - adminService parses and validates the file, creates questions and tags in a database transaction
+   - Validation errors reported per-row with line numbers; valid rows are imported, invalid rows are skipped and listed in the error report
+   - File upload via multer (temporary file, deleted after processing)
+5. **Views** - Admin dashboard, settings, user management, bulk upload
+6. **Tests** - Unit tests for admin operations, ownership bypass, settings management, bulk upload parsing/validation
 
 ---
 
@@ -544,11 +640,11 @@ Create migration scripts executed in order. Key tables:
 
 | Phase | Deliverable | Dependencies |
 |-------|------------|-------------|
-| 1 | Auth, DB, sessions, rate limiting | None |
-| 2 | Quiz & question CRUD, media upload, invite system | Phase 1 |
+| 1 | Auth, DB, sessions, rate limiting, app settings | None |
+| 2 | Quiz & question CRUD, media upload, invite system, tagging, question search | Phase 1 |
 | 3 | Team & player management, lobby | Phase 2 |
 | 4 | Live quiz engine, drawing, scoring, reconnection | Phase 3 |
 | 5 | Leaderboard, history, export | Phase 4 |
-| 6 | Admin dashboard | Phase 1 |
+| 6 | Admin dashboard, settings, user management, bulk upload | Phase 1 |
 
 Phases 5 and 6 can be developed in parallel once Phase 4 is complete.

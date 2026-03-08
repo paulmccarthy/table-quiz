@@ -1,0 +1,12 @@
+//- Reusable tag input component
+//- Usage: include with variables: tagInputId, tagInputName, existingTags (array of {id, name})
+.tag-input-container(id=`${tagInputId}-container`)
+  .tag-chips(id=`${tagInputId}-chips`)
+    if existingTags && existingTags.length
+      each tag in existingTags
+        span.badge.bg-primary.me-1.mb-1.tag-chip(data-tag-id=tag.id data-tag-name=tag.name)
+          = tag.name
+          button.btn-close.btn-close-white.ms-1(type="button" aria-label="Remove" style="font-size:0.6em")
+  input.form-control(type="text" id=tagInputId placeholder="Type to search tags..." autocomplete="off")
+  .dropdown-menu.tag-suggestions(id=`${tagInputId}-suggestions`)
+  input(type="hidden" name=tagInputName id=`${tagInputId}-hidden`)

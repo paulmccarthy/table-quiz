@@ -2,6 +2,26 @@ extends ../layouts/main
 
 block content
   h2 Admin Dashboard
+  .row.mb-4
+    .col-md-4
+      .card
+        .card-body.text-center
+          h5 App Settings
+          p.text-muted OAuth providers, email verification
+          a.btn.btn-primary(href="/admin/settings") Manage Settings
+    .col-md-4
+      .card
+        .card-body.text-center
+          h5 User Management
+          p.text-muted Reset passwords, manage users
+          a.btn.btn-primary(href="/admin/users") Manage Users
+    .col-md-4
+      .card
+        .card-body.text-center
+          h5 Bulk Upload
+          p.text-muted Import questions from CSV/JSON
+          a.btn.btn-primary(href="/admin/bulk-upload") Upload Questions
+
   .card.mb-4
     .card-header
       h4 Users

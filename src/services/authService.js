@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const User = require('../models/User');
 const EmailService = require('./emailService');
+const AppSettings = require('../models/AppSettings');
 
 const AuthService = {
   async register({ email, password, displayName, role = 'player' }) {
@@ -9,7 +10,13 @@ const AuthService = {
       throw new Error('Email already registered.');
     }
     const user = await User.create({ email, password, displayName, role });
-    await EmailService.sendVerificationEmail(email, user.verificationToken);
+    const emailVerificationEnabled = await AppSettings.isEmailVerificationEnabled();
+    if (emailVerificationEnabled) {
+      await EmailService.sendVerificationEmail(email, user.verificationToken);
+    } else {
+      // Auto-verify when email verification is disabled
+      await User.verifyEmail(user.verificationToken);
+    }
     return user;
   },
 

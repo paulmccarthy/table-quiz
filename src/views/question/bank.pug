@@ -13,6 +13,7 @@ block content
           th Content
           th Answer Type
           th Difficulty
+          th Tags
           th Actions
       tbody
         each q in questions
@@ -25,6 +26,10 @@ block content
               span.badge.bg-secondary= q.answer_type
             td
               span.badge(class={'easy':'bg-success','medium':'bg-warning','hard':'bg-danger'}[q.difficulty])= q.difficulty
+            td
+              if q.tags && q.tags.length
+                each tag in q.tags
+                  span.badge.bg-primary.me-1= tag.name
             td
               .btn-group
                 a.btn.btn-sm.btn-outline-primary(href=`/questions/${q.id}/edit`) Edit

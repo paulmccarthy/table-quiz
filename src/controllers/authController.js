@@ -1,10 +1,11 @@
 const passport = require('passport');
 const AuthService = require('../services/authService');
-const User = require('../models/User');
+const AppSettings = require('../models/AppSettings');
 
 const AuthController = {
-  getLogin(req, res) {
-    res.render('auth/login', { title: 'Login' });
+  async getLogin(req, res) {
+    const oauth = await AppSettings.getOAuthSettings();
+    res.render('auth/login', { title: 'Login', oauth });
   },
 
   postLogin(req, res, next) {

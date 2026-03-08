@@ -17,6 +17,12 @@ block content
             .mb-3.form-check
               input.form-check-input#isPublic(type="checkbox" name="isPublic" checked=(quiz && quiz.is_public))
               label.form-check-label(for="isPublic") Public Quiz
+            .mb-3
+              label.form-label Tags
+              - var tagInputId = 'quizTags'
+              - var tagInputName = 'tags'
+              - var existingTags = tags || []
+              include ../partials/tagInput
             button.btn.btn-primary(type="submit")= quiz ? 'Update Quiz' : 'Create Quiz'
 
           if quiz
@@ -46,9 +52,23 @@ block content
                             td
                               form(method="POST" action=`/quiz/${quiz.id}/rounds/${round.id}/questions/${q.round_question_id}/remove` style="display:inline")
                                 button.btn.btn-sm.btn-outline-danger(type="submit") Remove
+
+                  h6 Add Question
+                  .card.bg-light.p-3.mb-2
+                    .row.g-2.mb-2
+                      .col-md-5
+                        input.form-control.form-control-sm#questionSearch(type="text" placeholder="Search question text...")
+                      .col-md-5
+                        - var tagInputId = `searchTags_${round.id}`
+                        - var tagInputName = `searchTagsHidden_${round.id}`
+                        - var existingTags = []
+                        include ../partials/tagInput
+                      .col-md-2
+                        button.btn.btn-sm.btn-outline-secondary.w-100(type="button" onclick=`searchQuestions('${round.id}')`) Search
+                    #searchResults.mb-2(data-round-id=round.id)
                   form.row.g-2(method="POST" action=`/quiz/${quiz.id}/rounds/${round.id}/questions/add`)
                     .col-auto
-                      input.form-control(type="number" name="questionId" placeholder="Question ID" required)
+                      input.form-control(type="number" name="questionId" placeholder="Question ID" required id=`qid_${round.id}`)
                     .col-auto
                       input.form-control(type="number" name="questionOrder" placeholder="Order" required)
                     .col-auto
@@ -64,3 +84,51 @@ block content
               a.btn.btn-info(href=`/quiz/${quiz.id}/invite`) Invitations
               form(method="POST" action=`/quiz/${quiz.id}/delete` onsubmit="return confirm('Delete this quiz?')")
                 button.btn.btn-danger(type="submit") Delete Quiz
+
+block scripts
+  script(src="/js/tag-input.js")
+  script.
+    initTagInput('quizTags', '/api/tags');
+
+    var searchTagInputs = {};
+    document.querySelectorAll('[id^="searchTags_"]').forEach(function(el) {
+      var roundId = el.id.replace('searchTags_', '');
+      searchTagInputs[roundId] = initTagInput('searchTags_' + roundId, '/api/tags');
+    });
+
+    function searchQuestions(roundId) {
+      var textQuery = document.getElementById('questionSearch').value;
+      var tagInput = searchTagInputs[roundId];
+      var selectedTags = tagInput ? tagInput.getSelectedTags() : [];
+      var tagIds = selectedTags.filter(function(t) { return t.id > 0; }).map(function(t) { return t.id; });
+
+      var params = new URLSearchParams();
+      if (textQuery) params.set('q', textQuery);
+      if (tagIds.length) params.set('tags', tagIds.join(','));
+
+      fetch('/api/tags/questions/search?' + params.toString())
+        .then(function(res) { return res.json(); })
+        .then(function(questions) {
+          var container = document.querySelector('#searchResults[data-round-id="' + roundId + '"]');
+          if (!questions.length) {
+            container.innerHTML = '<p class="text-muted small">No questions found.</p>';
+            return;
+          }
+          var html = '<table class="table table-sm table-hover"><thead><tr><th>ID</th><th>Question</th><th>Difficulty</th><th></th></tr></thead><tbody>';
+          questions.forEach(function(q) {
+            html += '<tr><td>' + q.id + '</td><td>' + q.text.substring(0, 80) + '</td><td>' + q.difficulty + '</td>';
+            html += '<td><button type="button" class="btn btn-sm btn-outline-success" onclick="selectQuestion(\'' + roundId + '\', ' + q.id + ')">Select</button></td></tr>';
+          });
+          html += '</tbody></table>';
+          container.innerHTML = html;
+        })
+        .catch(function() {
+          var container = document.querySelector('#searchResults[data-round-id="' + roundId + '"]');
+          container.innerHTML = '<p class="text-danger small">Search failed.</p>';
+        });
+    }
+
+    function selectQuestion(roundId, questionId) {
+      var input = document.getElementById('qid_' + roundId);
+      if (input) input.value = questionId;
+    }

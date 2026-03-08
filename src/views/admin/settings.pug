@@ -1,0 +1,28 @@
+extends ../layouts/main
+
+block content
+  h2 App Settings
+  .row
+    .col-md-8.mx-auto
+      .card
+        .card-header
+          h4 Application Settings
+        .card-body
+          form(method="POST" action="/admin/settings")
+            h5 OAuth Providers
+            p.text-muted Enable or disable OAuth login providers.
+            .mb-3.form-check
+              input.form-check-input#oauthFacebook(type="checkbox" name="oauth_facebook_enabled" value="on" checked=(settings.oauth_facebook_enabled === 'true'))
+              label.form-check-label(for="oauthFacebook") Facebook
+            .mb-3.form-check
+              input.form-check-input#oauthMicrosoft(type="checkbox" name="oauth_microsoft_enabled" value="on" checked=(settings.oauth_microsoft_enabled === 'true'))
+              label.form-check-label(for="oauthMicrosoft") Microsoft
+            .mb-3.form-check
+              input.form-check-input#oauthGithub(type="checkbox" name="oauth_github_enabled" value="on" checked=(settings.oauth_github_enabled === 'true'))
+              label.form-check-label(for="oauthGithub") GitHub
+            hr
+            h5 Email Verification
+            .mb-3.form-check
+              input.form-check-input#emailVerification(type="checkbox" name="email_verification_enabled" value="on" checked=(settings.email_verification_enabled === 'true'))
+              label.form-check-label(for="emailVerification") Require email verification for new accounts
+            button.btn.btn-primary(type="submit") Save Settings

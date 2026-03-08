@@ -38,6 +38,14 @@ Web based application used to run table quizzes across multiple locations simult
 34. Quiz history and results are stored and viewable by players and quizmasters.
 35. Quizmasters can export quiz results as CSV or PDF.
 36. Rate limiting on login, access code, and API endpoints to prevent brute-force attacks.
+37. Admins can select which OAuth providers (Facebook, Microsoft, Github) are enabled.
+38. Admins can enable or disable email verification for new accounts.
+39. Admins can bulk upload questions to the question bank (via CSV or JSON file).
+40. Admins can reset the password of any user by directly setting a password or sending a reset link to the user's registered email address.
+41. Multiple choice answer options are entered individually via separate text boxes, not as JSON.
+42. Questions can be tagged with multiple tags. Tags are case insensitive and can contain spaces. Tags can be added, removed, and updated at any time. When selecting tags, available tags are shown as the user types (autocomplete). New tags are created when the user hits enter.
+43. Quizzes can be tagged with multiple tags. Tags are case insensitive and can contain spaces. Tags can be added, removed, and updated at any time. When selecting tags, available tags are shown as the user types (autocomplete). New tags are created when the user hits enter.
+44. Quizmasters can search for questions by tags or question content when adding questions to a quiz. Search does not include answers.
 
 ## Non-functional Requirements
 * Application must be written in NodeJS.

@@ -21,7 +21,7 @@ block content
                   option(value="video" selected=(question && question.content_type === 'video')) Video
               .col-md-4.mb-3
                 label.form-label(for="answerType") Answer Type
-                select.form-select#answerType(name="answerType")
+                select.form-select#answerType(name="answerType" onchange="toggleOptions()")
                   option(value="multiple_choice" selected=(question && question.answer_type === 'multiple_choice')) Multiple Choice
                   option(value="freeform_text" selected=(question && question.answer_type === 'freeform_text')) Freeform Text
                   option(value="drawing" selected=(question && question.answer_type === 'drawing')) Drawing
@@ -39,10 +39,54 @@ block content
             .mb-3
               label.form-label(for="correctAnswer") Correct Answer
               input.form-control#correctAnswer(type="text" name="correctAnswer" value=(question ? question.correct_answer : ''))
+            #optionsContainer.mb-3
+              label.form-label Multiple Choice Options
+              #optionFields
+                if question && question.options && question.options.length
+                  each opt, idx in question.options
+                    .input-group.mb-2
+                      input.form-control(type="text" name=`option_${idx + 1}` value=opt placeholder=`Option ${idx + 1}`)
+                      button.btn.btn-outline-danger(type="button" onclick="removeOption(this)") &times;
+                else
+                  - for (var i = 1; i <= 4; i++)
+                    .input-group.mb-2
+                      input.form-control(type="text" name=`option_${i}` placeholder=`Option ${i}`)
+                      button.btn.btn-outline-danger(type="button" onclick="removeOption(this)") &times;
+              button.btn.btn-sm.btn-outline-secondary.mt-1(type="button" onclick="addOption()") + Add Option
             .mb-3
-              label.form-label(for="options") Options (JSON array for multiple choice)
-              textarea.form-control#options(name="options" rows="2" placeholder='["Option A","Option B","Option C","Option D"]')= question && question.options ? JSON.stringify(question.options) : ''
+              label.form-label Tags
+              - var tagInputId = 'questionTags'
+              - var tagInputName = 'tags'
+              - var existingTags = tags || []
+              include ../partials/tagInput
             .mb-3
               label.form-label(for="timeLimit") Time Limit (seconds, 0 = manual advance)
               input.form-control#timeLimit(type="number" name="timeLimit" min="0" value=(question ? question.time_limit : 0))
             button.btn.btn-primary(type="submit")= question ? 'Update' : 'Create'
+
+block scripts
+  script(src="/js/tag-input.js")
+  script.
+    var optionCounter = document.querySelectorAll('#optionFields .input-group').length;
+
+    function addOption() {
+      optionCounter++;
+      var div = document.createElement('div');
+      div.className = 'input-group mb-2';
+      div.innerHTML = '<input class="form-control" type="text" name="option_' + optionCounter + '" placeholder="Option ' + optionCounter + '">' +
+        '<button class="btn btn-outline-danger" type="button" onclick="removeOption(this)">&times;</button>';
+      document.getElementById('optionFields').appendChild(div);
+    }
+
+    function removeOption(btn) {
+      btn.closest('.input-group').remove();
+    }
+
+    function toggleOptions() {
+      var answerType = document.getElementById('answerType').value;
+      var container = document.getElementById('optionsContainer');
+      container.style.display = answerType === 'multiple_choice' ? 'block' : 'none';
+    }
+
+    toggleOptions();
+    initTagInput('questionTags', '/api/tags');
